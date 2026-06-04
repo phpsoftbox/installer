@@ -1,0 +1,77 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use PhpSoftBox\CliApp\CliApp;
+use PhpSoftBox\CliApp\Command\InMemoryCommandRegistry;
+use PhpSoftBox\CliApp\Io\ConsoleIo;
+use PhpSoftBox\ErrorFormatter\ThrowableFormatter;
+use PhpSoftBox\Installer\Cli\InstallerCommandProvider;
+
+$autoload = $GLOBALS['_composer_autoload_path'] ?? null;
+$autoloadCandidates = [
+    $autoload,
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../../CliApp/vendor/autoload.php',
+    getcwd() . '/vendor/autoload.php',
+];
+
+$autoloadPath = null;
+foreach ($autoloadCandidates as $candidate) {
+    if (is_string($candidate) && is_file($candidate)) {
+        $autoloadPath = $candidate;
+        break;
+    }
+}
+
+if ($autoloadPath === null) {
+    fwrite(STDERR, "Autoload file not found. Run composer install.\n");
+    exit(1);
+}
+
+require $autoloadPath;
+
+spl_autoload_register(static function (string $class): void {
+    $prefix = 'PhpSoftBox\\Installer\\';
+    if (!str_starts_with($class, $prefix)) {
+        return;
+    }
+
+    $path = __DIR__ . '/../src/' . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
+    if (is_file($path)) {
+        require $path;
+    }
+});
+
+$argv = $_SERVER['argv'] ?? [];
+if (!is_array($argv)) {
+    $argv = [];
+}
+array_shift($argv);
+
+$command = (string) ($argv[0] ?? '');
+if ($command !== '') {
+    array_shift($argv);
+}
+
+$registry = new InMemoryCommandRegistry();
+new InstallerCommandProvider()->register($registry);
+
+$app = new CliApp($registry, new ConsoleIo());
+
+try {
+    $response = $app->runner()->run($command, $argv);
+    exit($response->code);
+} catch (Throwable $exception) {
+    if (class_exists(ThrowableFormatter::class)) {
+        foreach (ThrowableFormatter::toLines($exception, 'Unhandled exception:') as $line) {
+            fwrite(STDERR, $line . PHP_EOL);
+        }
+    } else {
+        fwrite(STDERR, 'Unhandled exception: ' . $exception->getMessage() . PHP_EOL);
+    }
+
+    exit(1);
+}
