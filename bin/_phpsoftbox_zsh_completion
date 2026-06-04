@@ -1,0 +1,25 @@
+#compdef phpsoftbox psb
+
+_phpsoftbox_zsh_completion() {
+    local phpsoftbox_bin="${words[1]}"
+    if [[ "${phpsoftbox_bin}" == "psb" ]] && ! command -v psb >/dev/null 2>&1; then
+        phpsoftbox_bin="phpsoftbox"
+    fi
+
+    if ! command -v "${phpsoftbox_bin}" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    local -a commands
+    commands=("${(@f)$("${phpsoftbox_bin}" list 2>/dev/null | awk '/^- / {print $2}')}")
+
+    if (( CURRENT == 2 )); then
+        # _describe treats ":" as a value/description separator.
+        compadd -- "${commands[@]}"
+        return $?
+    fi
+
+    return 0
+}
+
+compdef _phpsoftbox_zsh_completion phpsoftbox psb
