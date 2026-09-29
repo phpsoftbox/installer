@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-composer global require \
-  phpsoftbox/installer:dev-master \
-  phpsoftbox/cli-app:dev-master \
-  phpsoftbox/error-formatter:dev-master \
-  --prefer-stable
+composer global require phpsoftbox/installer:^1.0
 
 composer_bin="$(composer -q global config bin-dir --absolute)"
 composer_home="$(composer -q global config home)"

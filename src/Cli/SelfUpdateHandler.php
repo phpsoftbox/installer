@@ -25,10 +25,8 @@ final class SelfUpdateHandler implements HandlerInterface
             'composer',
             'global',
             'require',
-            'phpsoftbox/installer:dev-master',
-            'phpsoftbox/cli-app:dev-master',
-            'phpsoftbox/error-formatter:dev-master',
-            '--prefer-stable',
+            'phpsoftbox/installer:^1.0',
+            '--with-all-dependencies',
         ]);
     }
 }

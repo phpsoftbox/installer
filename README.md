@@ -24,11 +24,7 @@ composer --version
 или через Composer:
 
 ```bash
-composer global require \
-  phpsoftbox/installer:dev-master \
-  phpsoftbox/cli-app:dev-master \
-  phpsoftbox/error-formatter:dev-master \
-  --prefer-stable
+composer global require phpsoftbox/installer:^1.0
 ```
 
 Проверка:
@@ -191,11 +187,7 @@ composer --version
 or with Composer:
 
 ```bash
-composer global require \
-  phpsoftbox/installer:dev-master \
-  phpsoftbox/cli-app:dev-master \
-  phpsoftbox/error-formatter:dev-master \
-  --prefer-stable
+composer global require phpsoftbox/installer:^1.0
 ```
 
 Check the installation:
