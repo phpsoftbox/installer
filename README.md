@@ -24,11 +24,7 @@ composer --version
 или через Composer:
 
 ```bash
-composer global require \
-  phpsoftbox/installer:dev-master \
-  phpsoftbox/cli-app:dev-master \
-  phpsoftbox/error-formatter:dev-master \
-  --prefer-stable
+composer global require phpsoftbox/installer:^1.0
 ```
 
 Проверка:
@@ -132,6 +128,12 @@ Workspace устанавливается как scaffold-копия без `.git
 
 Команды `init`, `config`, `up`, `down`, `down-clear`, `build`, `build-no-cache`, `ps`, `logs`, `shell`, `composer-install`, `composer-update`, `test`, `cs-check`, `cs-fix`, `yarn-install`, `yarn-build` и `vite-dev` поддерживают `-p|--profiles` для разового переопределения профилей Workspace.
 
+Имя профиля — латиница, цифры, `_`, `.`, `-`, первый символ — буква или цифра (`php-cli`, `mysql`). Профили попадают в
+`make PROFILES=...` и `COMPOSE_PROFILES`, поэтому другие имена (`$(shell ...)`, `;`) отклоняются — и в `--profiles`, и
+в `profiles:*`, и при чтении `default_profiles` из `.workspace.ini`.
+
+`--source` в `workspace:install` и `new` передаётся в `git clone` после `--`, поэтому не может стать опцией git.
+
 | Команда | Где запускать | Описание |
 | --- | --- | --- |
 | `phpsoftbox workspace:install [dir]` | Любая директория | Устанавливает Workspace scaffold в целевую директорию. По умолчанию используется `Workspace`; доступны `--source/-s`, `--branch/-b`, `--force/-f`. |
@@ -185,11 +187,7 @@ composer --version
 or with Composer:
 
 ```bash
-composer global require \
-  phpsoftbox/installer:dev-master \
-  phpsoftbox/cli-app:dev-master \
-  phpsoftbox/error-formatter:dev-master \
-  --prefer-stable
+composer global require phpsoftbox/installer:^1.0
 ```
 
 Check the installation:
@@ -292,6 +290,12 @@ Workspace is installed as a scaffold copy without `.git`, so it can be customize
 
 The `init`, `config`, `up`, `down`, `down-clear`, `build`, `build-no-cache`, `ps`, `logs`, `shell`, `composer-install`, `composer-update`, `test`, `cs-check`, `cs-fix`, `yarn-install`, `yarn-build`, and `vite-dev` commands support `-p|--profiles` for one-off Workspace profile overrides.
 
+A profile name contains Latin letters, digits, `_`, `.`, `-` and starts with a letter or digit (`php-cli`, `mysql`).
+Profiles end up in `make PROFILES=...` and `COMPOSE_PROFILES`, so other names (`$(shell ...)`, `;`) are rejected in
+`--profiles`, in `profiles:*` and when `default_profiles` is read from `.workspace.ini`.
+
+`--source` of `workspace:install` and `new` is passed to `git clone` after `--`, so it cannot become a git option.
+
 | Command | Run from | Description |
 | --- | --- | --- |
 | `phpsoftbox workspace:install [dir]` | Any directory | Installs the Workspace scaffold into the target directory. Defaults to `Workspace`; supports `--source/-s`, `--branch/-b`, `--force/-f`. |
@@ -320,3 +324,10 @@ The `init`, `config`, `up`, `down`, `down-clear`, `build`, `build-no-cache`, `ps
 | `phpsoftbox profiles:set <profiles...>` | Workspace root | Replaces the default profile set in `.workspace.ini`. |
 | `phpsoftbox profiles:add <profiles...>` | Workspace root | Adds profiles to the default set without duplicates. |
 | `phpsoftbox profiles:remove <profiles...>` | Workspace root | Removes profiles from the default set. |
+
+## Разработка / Development
+
+```bash
+composer test      # PHPUnit
+composer cs:check  # psb-cs-fixer
+```

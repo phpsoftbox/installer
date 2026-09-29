@@ -8,21 +8,25 @@ use PhpSoftBox\CliApp\Command\HandlerInterface;
 use PhpSoftBox\CliApp\Response;
 use PhpSoftBox\CliApp\Runner\RunnerInterface;
 use PhpSoftBox\Installer\Support\ProcessRunner;
+use PhpSoftBox\Installer\Support\ProcessRunnerInterface;
 
 final class SelfUpdateHandler implements HandlerInterface
 {
+    public function __construct(
+        private readonly ProcessRunnerInterface $processRunner = new ProcessRunner(),
+    ) {
+    }
+
     public function run(RunnerInterface $runner): int|Response
     {
         $runner->io()->writeln('Updating PhpSoftBox installer...', 'comment');
 
-        return new ProcessRunner()->run([
+        return $this->processRunner->run([
             'composer',
             'global',
             'require',
-            'phpsoftbox/installer:dev-master',
-            'phpsoftbox/cli-app:dev-master',
-            'phpsoftbox/error-formatter:dev-master',
-            '--prefer-stable',
+            'phpsoftbox/installer:^1.0',
+            '--with-all-dependencies',
         ]);
     }
 }

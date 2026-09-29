@@ -12,7 +12,7 @@ use const STDERR;
 use const STDIN;
 use const STDOUT;
 
-final class ProcessRunner
+final class ProcessRunner implements ProcessRunnerInterface
 {
     /** @param list<string> $command */
     public function run(array $command, ?string $cwd = null): int

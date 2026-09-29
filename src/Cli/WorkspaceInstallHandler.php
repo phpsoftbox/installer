@@ -9,15 +9,21 @@ use PhpSoftBox\CliApp\Response;
 use PhpSoftBox\CliApp\Runner\RunnerInterface;
 use PhpSoftBox\Installer\Support\Filesystem;
 use PhpSoftBox\Installer\Support\ProcessRunner;
+use PhpSoftBox\Installer\Support\ProcessRunnerInterface;
 use RuntimeException;
 
-use function is_dir;
 use function file_put_contents;
+use function is_dir;
 use function trim;
 
 final class WorkspaceInstallHandler implements HandlerInterface
 {
     public const DEFAULT_SOURCE = 'https://github.com/phpsoftbox/workspace.git';
+
+    public function __construct(
+        private readonly ProcessRunnerInterface $processRunner = new ProcessRunner(),
+    ) {
+    }
 
     public function run(RunnerInterface $runner): int|Response
     {
@@ -54,10 +60,12 @@ final class WorkspaceInstallHandler implements HandlerInterface
                     $command[] = '--branch';
                     $command[] = $branch;
                 }
+                // `--` не даёт источнику вида `--upload-pack=...` стать опцией git.
+                $command[] = '--';
                 $command[] = $source;
                 $command[] = $dir;
 
-                $code = new ProcessRunner()->run($command);
+                $code = $this->processRunner->run($command);
                 if ($code !== 0) {
                     return $code;
                 }
