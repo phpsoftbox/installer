@@ -9,13 +9,25 @@
             "email": "inspector-who@mail.ru"
         }
     ],
+    "config": {
+        "sort-packages": true
+    },
     "require": {
         "php": "^8.5",
         "phpsoftbox/cli-app": "dev-master"
     },
+    "require-dev": {
+        "phpsoftbox/cs-fixer": "^1.2.1",
+        "phpunit/phpunit": "^13.3"
+    },
     "autoload": {
         "psr-4": {
             "PhpSoftBox\\Installer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhpSoftBox\\Installer\\Tests\\": "tests/"
         }
     },
     "bin": [

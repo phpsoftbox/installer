@@ -15,9 +15,11 @@ use function dirname;
 use function file_exists;
 use function is_dir;
 use function is_file;
+use function is_link;
 use function mkdir;
 use function preg_match;
 use function rmdir;
+use function rtrim;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
@@ -26,6 +28,7 @@ use function symlink;
 use function unlink;
 
 use const DIRECTORY_SEPARATOR;
+
 final class Filesystem
 {
     public function ensureDirectory(string $path): void

@@ -4,17 +4,21 @@ declare(strict_types=1);
 
 namespace PhpSoftBox\Installer\Support;
 
+use InvalidArgumentException;
+
 use function array_filter;
 use function array_values;
 use function file;
 use function file_put_contents;
 use function implode;
 use function in_array;
+use function preg_match;
 use function preg_split;
 use function str_starts_with;
 use function trim;
 
 use const FILE_IGNORE_NEW_LINES;
+use const PHP_EOL;
 
 final class ProfileConfig
 {
@@ -80,11 +84,23 @@ final class ProfileConfig
         return $profiles;
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     *
+     * @throws InvalidArgumentException имя профиля не соответствует формату Docker Compose
+     */
     private function parse(string $value): array
     {
         $parts = preg_split('/[\s,]+/', trim($value)) ?: [];
 
-        return array_values(array_filter($parts, static fn (string $part): bool => $part !== ''));
+        $profiles = array_values(array_filter($parts, static fn (string $part): bool => $part !== ''));
+        foreach ($profiles as $profile) {
+            // Профили уходят в `make PROFILES=...` и `COMPOSE_PROFILES`: `$(shell ...)` make выполнил бы.
+            if (preg_match('/^[A-Za-z0-9][A-Za-z0-9_.-]*$/', $profile) !== 1) {
+                throw new InvalidArgumentException('Invalid profile name: ' . $profile);
+            }
+        }
+
+        return $profiles;
     }
 }

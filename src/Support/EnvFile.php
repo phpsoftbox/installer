@@ -11,6 +11,7 @@ use function implode;
 use function str_starts_with;
 
 use const FILE_IGNORE_NEW_LINES;
+use const PHP_EOL;
 
 final class EnvFile
 {

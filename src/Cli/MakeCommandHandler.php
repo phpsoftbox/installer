@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace PhpSoftBox\Installer\Cli;
 
+use InvalidArgumentException;
 use PhpSoftBox\CliApp\Response;
 use PhpSoftBox\CliApp\Runner\RunnerInterface;
 use PhpSoftBox\Installer\Support\ProcessRunner;
+use PhpSoftBox\Installer\Support\ProcessRunnerInterface;
 use PhpSoftBox\Installer\Support\ProfileConfig;
 use PhpSoftBox\Installer\Support\WorkspaceContext;
 
@@ -19,6 +21,11 @@ use function trim;
 final class MakeCommandHandler
 {
     private const PROFILED_DOWN_TARGETS = ['down', 'down-clear'];
+
+    public function __construct(
+        private readonly ProcessRunnerInterface $processRunner = new ProcessRunner(),
+    ) {
+    }
 
     /** @return array<string, array{method:string,target:string}> */
     public static function commands(): array
@@ -141,21 +148,27 @@ final class MakeCommandHandler
             return Response::FAILURE;
         }
 
-        $command = ['make', $target];
+        $command  = ['make', $target];
         $profiles = $this->requestedProfiles($runner);
-        if (is_string($profiles) && trim($profiles) !== '') {
-            $profileList = (new ProfileConfig())->normalize([$profiles]);
-            $profiles    = implode(' ', $profileList);
-            $command[]   = 'PROFILES=' . $profiles;
-        } else {
-            $profileList = (new ProfileConfig())->read(WorkspaceContext::root() . '/.workspace.ini');
+        try {
+            if (is_string($profiles) && trim($profiles) !== '') {
+                $profileList = new ProfileConfig()->normalize([$profiles]);
+
+                $command[] = 'PROFILES=' . implode(' ', $profileList);
+            } else {
+                $profileList = new ProfileConfig()->read(WorkspaceContext::root() . '/.workspace.ini');
+            }
+        } catch (InvalidArgumentException $exception) {
+            $runner->io()->writeln($exception->getMessage(), 'error');
+
+            return Response::INVALID_INPUT;
         }
 
         if (in_array($target, self::PROFILED_DOWN_TARGETS, true) && $profileList !== []) {
             array_unshift($command, 'env', 'COMPOSE_PROFILES=' . implode(',', $profileList));
         }
 
-        return (new ProcessRunner())->run($command, WorkspaceContext::root());
+        return $this->processRunner->run($command, WorkspaceContext::root());
     }
 
     private function requestedProfiles(RunnerInterface $runner): ?string

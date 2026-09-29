@@ -7,10 +7,11 @@ namespace PhpSoftBox\Installer\Cli;
 use PhpSoftBox\CliApp\Command\HandlerInterface;
 use PhpSoftBox\CliApp\Response;
 use PhpSoftBox\CliApp\Runner\RunnerInterface;
-use PhpSoftBox\Installer\Support\WorkspaceContext;
 use PhpSoftBox\Installer\Support\EnvFile;
 use PhpSoftBox\Installer\Support\Filesystem;
 use PhpSoftBox\Installer\Support\ProcessRunner;
+use PhpSoftBox\Installer\Support\ProcessRunnerInterface;
+use PhpSoftBox\Installer\Support\WorkspaceContext;
 use RuntimeException;
 
 use function is_dir;
@@ -19,6 +20,11 @@ use function trim;
 final class NewProjectHandler implements HandlerInterface
 {
     public const string DEFAULT_SOURCE = 'https://github.com/phpsoftbox/app-backend.git';
+
+    public function __construct(
+        private readonly ProcessRunnerInterface $processRunner = new ProcessRunner(),
+    ) {
+    }
 
     public function run(RunnerInterface $runner): int|Response
     {
@@ -34,6 +40,7 @@ final class NewProjectHandler implements HandlerInterface
         $force   = (bool) $request->option('force', false);
 
         $fs = new Filesystem();
+
         try {
             $fs->assertSafeServiceName($service);
             $fs->ensureDirectory('local');
@@ -56,10 +63,12 @@ final class NewProjectHandler implements HandlerInterface
                     $command[] = '--branch';
                     $command[] = $branch;
                 }
+                // `--` не даёт источнику вида `--upload-pack=...` стать опцией git.
+                $command[] = '--';
                 $command[] = $source;
                 $command[] = $target;
 
-                $code = new ProcessRunner()->run($command);
+                $code = $this->processRunner->run($command);
                 if ($code !== 0) {
                     return $code;
                 }
@@ -68,6 +77,7 @@ final class NewProjectHandler implements HandlerInterface
             $fs->remove($target . '/.git');
 
             $env = new EnvFile();
+
             $env->set('.env', 'BACKEND_PATH', './local/' . $service);
             $env->set('.env', 'PHP_IDE_CONFIG', 'serverName=' . $service);
         } catch (RuntimeException $exception) {

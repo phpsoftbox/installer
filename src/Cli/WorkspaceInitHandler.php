@@ -7,8 +7,8 @@ namespace PhpSoftBox\Installer\Cli;
 use PhpSoftBox\CliApp\Command\HandlerInterface;
 use PhpSoftBox\CliApp\Response;
 use PhpSoftBox\CliApp\Runner\RunnerInterface;
-use PhpSoftBox\Installer\Support\WorkspaceContext;
 use PhpSoftBox\Installer\Support\Filesystem;
+use PhpSoftBox\Installer\Support\WorkspaceContext;
 
 use function copy;
 use function file_put_contents;
@@ -38,6 +38,7 @@ final class WorkspaceInitHandler implements HandlerInterface
         }
 
         $filesystem = new Filesystem();
+
         $filesystem->ensureDirectory('local');
         file_put_contents('local/.gitkeep', '');
 
